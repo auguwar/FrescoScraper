@@ -5,7 +5,7 @@ import * as cheerio from 'cheerio';
 // Dotenv for environment variables
 import 'dotenv/config';
 // CSV and file system parser
-import {fs} from 'fs';
+import {open} from 'node:fs/promises';
 import {parse} from 'csv-parse/sync';
 
 
