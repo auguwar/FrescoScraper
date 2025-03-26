@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "fast-sign-435802-u1",
+  "private_key_id": "c8ab64eab605a734d89d23681fc57730371985da",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCT4YRfGAs5UiCo\nw63TKSlUxnwWWLkP4FP8lGmgfgFuzr7d7vrzENcxgKPUCijcV8sKjj6kfFum+/O3\n66IGCmDMkS41Bs7A0yOX2kkYdQR17+Z60iK6ZWr61t2TTUXBeMwGBQOeWOS+mLPY\nt0sYbMtJhTz5U6uiilnHcxNOvJGB3mKW906SyXzQaYRmOJQPzDbVKAwbWRmDziu0\nkmT4RFPCEnwG8pT68JKFb5XyJeVxwqWRTf42QS8mGnL4X0L+Sesh3H4mTnG9MbNd\nxynQ32XqWauEfXwUzgQPVU6m7Vx7KIpXuqivB8REM0uFTZZVp9+bKo1+0B4yRVmY\nygCrRCaTAgMBAAECggEAEnyx8LVvycWzoYV8+JX/vcJmhuCmmg6AUWY4YkD+atzb\nzaDvrG1hiaW8VWjDvPAYyQQJXsTRLGn5CPgjNEAd49UOgsCMHl0G6Rf35V/To+7O\n0HHut4CwRBWSc7TIUKyKTQJZdnVEe3NZoHEhqTcInvNSMRU9sr87BA0lz8URJ7v1\ntaA+/8pBXoT8qasL7sLw2xTstmVAIWjSkqQomqIHebeTxluNXVbs0qBPUzQL7PPf\n/RBi+3v72Wj3N55fqlF2tVLVi+GzyO4kcOIkiwVu4u3r44kfKbi4hsbDZjaBLslC\n9X31Xa45rL8DkCfiDUL+5hkOM4kFv75fRSRRfRyaoQKBgQDPd/zRx/ArPqrBiqqF\nwVqrZzUEGYbdRuIcvQ/BmrX5a70aGIA6xRNV8cwGo4ABg5yTYtqnX8wEepn06EsR\nhJwpgdGjhoS6BNPmdfpW9UaNlXMLJxLpsWrlbgCnZXrW9pTbWhc4QPWFpIy3uq++\nORZ25u5vpCxAS0T9+to9eFXvowKBgQC2eTAGHkSs8LDx1NiXK7OkbPzRWPfO2w9+\nAFSC2D1z/4+sLKXK0zYAgRsT9mWs59/c2JsFOgpTVxScanSkMI8CX7iGPLLTGnNR\nQ3VKLo5xZTenSYsbyFjk9yenQaNI1CWkd/BHKj+iXMMobJ02eHYoRX/xV04uTlwo\no2riToScUQKBgQCzQMh/uHAZ7Rs7/cM3rcfZMGLuF+Aeb5ANpIxoinOP/TZ1xZWF\nMaFzMGdHlRyUMlKmRVMGKg7sD8HViJ7Tk/AZLMEkuKUU0/cBuA2D9Ifw7J9pk2kT\n4OarNE/8UgHAmWwj2cMWJ4n63iF23SXbBRgTw5Nfgkl5g48oogTN95rIYQKBgD6m\nKxPerouF8+qDvn1glsP8W2zxE9vkoFQNfvaRkb/S3ZwqlB2oGKFhsk9PSKdt0RF9\nGPRZchQdEMmHT1bUCTWycaM9EdSi/zbGZ225wFQ0gUAhYu5+Ae9S4D1vrsUheW8X\nctqsKb7wBF1LtUpvX3oCKqRM6l3Br6iQOvFKLgORAoGBAIKAtpH4o22VvBrjVTj7\nR+mwjiof1TEhdpGZa8gh+yE8XwvBDzP5kgQXIES+6d4geZ8DztMMxSXjY3RXFqvW\n6ajUUVQ7Ih/Zhmt2u/CeR1Pb7gIcKnIpKftt3AFmgAd0i5mw+YFgoGCp7wtl+oSP\nIS3RuuUEoDN46WG6SlCBfgA5\n-----END PRIVATE KEY-----\n",
+  "client_email": "frescoscraper@fast-sign-435802-u1.iam.gserviceaccount.com",
+  "client_id": "113121762708795694908",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/frescoscraper%40fast-sign-435802-u1.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
