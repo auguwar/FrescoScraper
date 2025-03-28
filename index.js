@@ -5,8 +5,13 @@ import * as cheerio from 'cheerio';
 // Dotenv for environment variables
 import 'dotenv/config';
 // CSV and file system parser
-import {open} from 'node:fs/promises';
-import {parse} from 'csv-parse/sync';
+import csv from 'csv-parser';
+import fs from 'fs';
+
+const prices = [];
+
+
+// 
 
 
 // TEST SUBJECTS
@@ -67,10 +72,27 @@ function promediator(allData) {
     return (sum/allData.length)
 }
 
+// 
+
 // MAIN FUNCT
 async function main() {
-    console.log(priceSplitter(await getPrice(leastExpensive)))
-    console.log('promedio: ',promediator(priceSplitter(await getPrice(leastExpensive))));
-}
+
+    const results = [];
+
+    fs.createReadStream('tests.csv')
+        .pipe(csv(['model', 'url']))
+        .on('data', (data) => results.push(data))
+        .on('end', () => {
+            results.forEach(
+                async (i) => {
+                    console.log('modelo: ', i.model, 'presio promedio', promediator(priceSplitter(await getPrice(i.url))));
+                    prices.push({model : i.model,
+                        price : promediator(priceSplitter(await getPrice(i.url)))});
+                    })
+                }
+            );
+        };
+    console.log(await prices);
+    // console.log('promedio: ',promediator(priceSplitter(await getPrice(leastExpensive))));
 
 main();
