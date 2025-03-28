@@ -11,7 +11,23 @@ import fs from 'fs';
 const prices = [];
 
 
-// 
+// LOAD CSV INTO MEMORY
+
+function loadCSV(myFile) {
+    const results = [];
+    fs.createReadStream('tests.csv')
+        .pipe(csv(['model', 'url']))
+        .on('data', (data) => results.push(data))
+        .on('end', () => {
+            return results;
+        })
+
+}
+
+// results.forEach(
+//     async (i) => {
+//         console.log('modelo: ', i.model, 'presio promedio', promediator(priceSplitter(await getPrice(i.url))));
+//     })
 
 
 // TEST SUBJECTS
@@ -76,23 +92,9 @@ function promediator(allData) {
 
 // MAIN FUNCT
 async function main() {
+    const data
+};
 
-    const results = [];
-
-    fs.createReadStream('tests.csv')
-        .pipe(csv(['model', 'url']))
-        .on('data', (data) => results.push(data))
-        .on('end', () => {
-            results.forEach(
-                async (i) => {
-                    console.log('modelo: ', i.model, 'presio promedio', promediator(priceSplitter(await getPrice(i.url))));
-                    prices.push({model : i.model,
-                        price : promediator(priceSplitter(await getPrice(i.url)))});
-                    })
-                }
-            );
-        };
-    console.log(await prices);
     // console.log('promedio: ',promediator(priceSplitter(await getPrice(leastExpensive))));
 
 main();
