@@ -1,3 +1,7 @@
+// leo el csv y a partir de cada valor, genero un objeto con el modelo y el precio
+// y lo guardo en un array.
+// luego recorro nuevamente ese array de objetos y saco promedio de los precios de los modelos repetidos, que vuelven a ser guardados en un segundo array para luego ser exportados a odoo
+
 // Importing modules
 // Scraping related modules
 import axios from 'axios';
@@ -5,24 +9,20 @@ import * as cheerio from 'cheerio';
 // Dotenv for environment variables
 import 'dotenv/config';
 // CSV and file system parser
-import csv from 'csv-parser';
+// import csv from 'csv-parser';
 import fs from 'fs';
-
-const prices = [];
-
+import { setTimeout } from 'timers/promises';
 
 // LOAD CSV INTO MEMORY
 
 function loadCSV(myFile) {
-    const results = [];
-    fs.createReadStream('tests.csv')
-        .pipe(csv(['model', 'url']))
-        .on('data', (data) => results.push(data))
-        .on('end', () => {
-            return results;
-        })
-
+    const andaonoanda = fs.readFile('tests.csv', 'ascii', (err, data) => {
+        if (err) throw err;
+        console.log('esta poronga',data);
+        return data
+    });
 }
+
 
 // results.forEach(
 //     async (i) => {
@@ -32,7 +32,7 @@ function loadCSV(myFile) {
 
 // TEST SUBJECTS
 // const mostExpensive = 'https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.9-13-mid-2012-unibody-usb3-specs.html';
-const leastExpensive = 'https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-aluminum-13-late-2008-unibody-specs.html'
+// const leastExpensive = 'https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-aluminum-13-late-2008-unibody-specs.html'
 
 
 // scraping data from HTTP
@@ -88,13 +88,14 @@ function promediator(allData) {
     return (sum/allData.length)
 }
 
-// 
-
 // MAIN FUNCT
 async function main() {
-    const data
+    setTimeout(
+        
 };
-
+const prices = loadCSV('tests.csv');
+console.log(prices);
+// console.log(typeof(prices));
     // console.log('promedio: ',promediator(priceSplitter(await getPrice(leastExpensive))));
 
 main();
