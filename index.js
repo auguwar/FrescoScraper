@@ -100,7 +100,7 @@ function promediator(allData) {
 async function main() {
     await loadCSV('tests.csv')
     .then(results => pricesFromCSVArr(results))
-    .then
+    .then(secondResult => console.log(secondResult))
     .catch(err => console.error(err));
 };
 
