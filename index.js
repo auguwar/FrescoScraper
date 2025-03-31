@@ -1,6 +1,7 @@
 // leo el csv y a partir de cada valor, genero un objeto con el modelo y el precio
 // y lo guardo en un array.
 // luego recorro nuevamente ese array de objetos y saco promedio de los precios de los modelos repetidos, que vuelven a ser guardados en un segundo array para luego ser exportados a odoo
+// https://everymac.com/systems/by_capability/mac-specs-by-machine-model-machine-id.html listado completo del sitio
 
 // Importing modules
 // Scraping related modules
@@ -43,6 +44,29 @@ async function pricesFromCSVArr(arr) {
     return newArr;
 }
 
+// function to get the average price of all models
+function averagePrice(arr) {
+    const results = [{model: '', price: 0}];
+    const orderedModels = arr.sort((a, b) => a.model.localeCompare(b.model));
+    // console.log(orderedModels);
+    for (let i = 0; i < orderedModels.length; i++) {
+        // console.log(orderedModels[i].model);
+        if (orderedModels[i].model !== results[results.length - 1].model) {
+            const firstIndex = orderedModels.findIndex((element) => element.model === orderedModels[i].model);
+            // console.log('first index: ',firstIndex);
+            const lastIndex = orderedModels.findLastIndex((element) => element.model === orderedModels[i].model);
+            // console.log('last index: ', lastIndex);
+            const values = [];
+            for (let j = firstIndex; j <= lastIndex; j++) {
+                values.push(orderedModels[j].price);
+            }
+            console.log('values: ', values);
+            results.push({model: orderedModels[i].model, avgPrice: promediator(values)});
+        }
+    }
+    return results.slice(1);
+}
+
 // scraping data from HTTP
 async function getPrice(url) {
     try {
@@ -65,28 +89,6 @@ function priceSplitter(scraped) {
     return prices;
 }
 
-// select max value
-// function selectMax(split){
-//     let max = 0;
-//     for (let i = 0; i < split.length; i++) {
-//         if (split[i] >= max) {
-//             max = split[i]
-//         }
-//     }
-//     return max;
-// }
-
-// select min value
-// function selectMin(split){
-//     let min = split[0];
-//     for (let i = 0; i < split.length; i++) {
-//         if (split[i] < min) {
-//             max = split[i]
-//         }
-//     }
-//     return min;
-// }
-
 // average of all items in array.
 function promediator(allData) {
     let sum = 0;
@@ -100,7 +102,8 @@ function promediator(allData) {
 async function main() {
     await loadCSV('tests.csv')
     .then(results => pricesFromCSVArr(results))
-    .then(secondResult => console.log(secondResult))
+    .then(results => averagePrice(results))
+    .then(results => console.log(results))
     .catch(err => console.error(err));
 };
 
