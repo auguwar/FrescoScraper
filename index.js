@@ -11,6 +11,7 @@ import * as cheerio from 'cheerio';
 import 'dotenv/config';
 // CSV and file system parser
 import { promises as fs } from 'fs';
+const horaminima = 1850/60;
 
 // loading csv file into an array of objects, each object containing model and url
 async function loadCSV(myFile) {
@@ -44,7 +45,7 @@ async function pricesFromCSVArr(arr) {
     return newArr;
 }
 
-// function to get the average price of all models
+// function to get the average price of all models and return an array of objects with the model and average price
 function averagePrice(arr) {
     const results = [{model: '', price: 0}];
     const orderedModels = arr.sort((a, b) => a.model.localeCompare(b.model));
