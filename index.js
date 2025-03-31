@@ -9,31 +9,39 @@ import * as cheerio from 'cheerio';
 // Dotenv for environment variables
 import 'dotenv/config';
 // CSV and file system parser
-// import csv from 'csv-parser';
-import fs from 'fs';
-import { setTimeout } from 'timers/promises';
+import { promises as fs } from 'fs';
 
-// LOAD CSV INTO MEMORY
-
-function loadCSV(myFile) {
-    const andaonoanda = fs.readFile('tests.csv', 'ascii', (err, data) => {
-        if (err) throw err;
-        console.log('esta poronga',data);
-        return data
-    });
+// loading csv file into an array of objects, each object containing model and url
+async function loadCSV(myFile) {
+    try {
+        const data = await fs.readFile(myFile,'ascii');
+        const lines = data.split('\n');
+        const results = lines.map(line => {
+            const [model, url] = line.split(',');
+            return { model, url };
+        });
+        return results;
+    } catch (err) {
+        throw err;
+    }
 }
 
-
-// results.forEach(
-//     async (i) => {
-//         console.log('modelo: ', i.model, 'presio promedio', promediator(priceSplitter(await getPrice(i.url))));
-//     })
-
-
-// TEST SUBJECTS
-// const mostExpensive = 'https://everymac.com/systems/apple/macbook_pro/specs/macbook-pro-core-i7-2.9-13-mid-2012-unibody-usb3-specs.html';
-// const leastExpensive = 'https://everymac.com/systems/apple/macbook/specs/macbook-core-2-duo-2.0-aluminum-13-late-2008-unibody-specs.html'
-
+// turning the array of objects into a new array of objects with the model and price, and then returning the new array
+async function pricesFromCSVArr(arr) {
+    const newArr = [];
+    for (let i = 0; i < arr.length; i++) {
+        const price = await getPrice(arr[i].url);
+        const split = priceSplitter(price);
+        const average = promediator(split);
+        const model = arr[i].model;
+        const data = {
+            model: model,
+            price: average
+        }
+        newArr.push(data);
+    }
+    return newArr;
+}
 
 // scraping data from HTTP
 async function getPrice(url) {
@@ -58,26 +66,26 @@ function priceSplitter(scraped) {
 }
 
 // select max value
-function selectMax(split){
-    let max = 0;
-    for (let i = 0; i < split.length; i++) {
-        if (split[i] >= max) {
-            max = split[i]
-        }
-    }
-    return max;
-}
+// function selectMax(split){
+//     let max = 0;
+//     for (let i = 0; i < split.length; i++) {
+//         if (split[i] >= max) {
+//             max = split[i]
+//         }
+//     }
+//     return max;
+// }
 
 // select min value
-function selectMin(split){
-    let min = split[0];
-    for (let i = 0; i < split.length; i++) {
-        if (split[i] < min) {
-            max = split[i]
-        }
-    }
-    return min;
-}
+// function selectMin(split){
+//     let min = split[0];
+//     for (let i = 0; i < split.length; i++) {
+//         if (split[i] < min) {
+//             max = split[i]
+//         }
+//     }
+//     return min;
+// }
 
 // average of all items in array.
 function promediator(allData) {
@@ -90,12 +98,10 @@ function promediator(allData) {
 
 // MAIN FUNCT
 async function main() {
-    setTimeout(
-        
+    await loadCSV('tests.csv')
+    .then(results => pricesFromCSVArr(results))
+    .then
+    .catch(err => console.error(err));
 };
-const prices = loadCSV('tests.csv');
-console.log(prices);
-// console.log(typeof(prices));
-    // console.log('promedio: ',promediator(priceSplitter(await getPrice(leastExpensive))));
 
-main();
+await main();
