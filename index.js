@@ -91,7 +91,7 @@ async function getPrice(url) {
 function priceSplitter(scraped) {
     const prices = scraped.replace(', ', '-').split('-');
     for (let i = 0; i < prices.length; i++) {
-        prices[i] = Number(prices[i].replace('US$', '').replace('*', ''));
+        prices[i] = Number(prices[i].replace('US$', '').replace('*', '').replace('**', ''));
     }
     console.log(prices);
     return prices;
@@ -108,7 +108,7 @@ function promediator(allData) {
 
 // MAIN FUNCT
 async function main() {
-    await loadCSV('tests5 copy.csv')
+    await loadCSV('macbookairs.csv')
         .then(results => pricesFromCSVArr(results))
         .then(results => averagePrice(results))
         .then(results => console.log(results))
