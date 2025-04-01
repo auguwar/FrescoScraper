@@ -11,12 +11,12 @@ import * as cheerio from 'cheerio';
 import 'dotenv/config';
 // CSV and file system parser
 import { promises as fs } from 'fs';
-const horaminima = 1850/60;
+const horaminima = 1850 / 60;
 
 // loading csv file into an array of objects, each object containing model and url
 async function loadCSV(myFile) {
     try {
-        const data = await fs.readFile(myFile,'ascii');
+        const data = await fs.readFile(myFile, 'ascii');
         const lines = data.split('\n');
         const results = lines.map(line => {
             const [model, url] = line.split(',');
@@ -40,19 +40,23 @@ async function pricesFromCSVArr(arr) {
             model: model,
             price: average
         }
+        console.log('Modelo: ',model)
         newArr.push(data);
     }
     return newArr;
 }
 
+
 // function to get the average price of all models and return an array of objects with the model and average price
 function averagePrice(arr) {
-    const results = [{model: '', price: 0}];
+    const results = [{ model: '', price: 0 }];
     const orderedModels = arr.sort((a, b) => a.model.localeCompare(b.model));
     // console.log(orderedModels);
     for (let i = 0; i < orderedModels.length; i++) {
         // console.log(orderedModels[i].model);
-        if (orderedModels[i].model !== results[results.length - 1].model) {
+        if (isNaN(orderedModels[i].price)) {
+            console.log('not a number encontrado en: ', orderedModels[i].model);
+        } else if (orderedModels[i].model !== results[results.length - 1].model) {
             const firstIndex = orderedModels.findIndex((element) => element.model === orderedModels[i].model);
             // console.log('first index: ',firstIndex);
             const lastIndex = orderedModels.findLastIndex((element) => element.model === orderedModels[i].model);
@@ -61,8 +65,8 @@ function averagePrice(arr) {
             for (let j = firstIndex; j <= lastIndex; j++) {
                 values.push(orderedModels[j].price);
             }
-            console.log('values: ', values);
-            results.push({model: orderedModels[i].model, avgPrice: promediator(values)});
+            //console.log('values: ', values);
+            results.push({ model: orderedModels[i].model, avgPrice: promediator(values) });
         }
     }
     return results.slice(1);
@@ -71,22 +75,25 @@ function averagePrice(arr) {
 // scraping data from HTTP
 async function getPrice(url) {
     try {
+        setTimeout(() => console.log('3 segs asi no se enoja everymac'), 3000);
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
         const result = $('table#specs37-title tbody tr td:last-child').text();
-        // console.log(result);
+        console.log(result);
         return result;
     } catch (error) {
         console.error(error);
+        return NaN;
     }
 }
 
 // returns an array of clean integers from the scraped data 
 function priceSplitter(scraped) {
-    const prices = scraped.replace(', ','-').split('-');
+    const prices = scraped.replace(', ', '-').split('-');
     for (let i = 0; i < prices.length; i++) {
-        prices[i] = Number(prices[i].replace('US$','').replace('*',''));
+        prices[i] = Number(prices[i].replace('US$', '').replace('*', ''));
     }
+    console.log(prices);
     return prices;
 }
 
@@ -96,16 +103,16 @@ function promediator(allData) {
     for (let index = 0; index < allData.length; index++) {
         sum = sum + allData[index];
     }
-    return (sum/allData.length)
+    return (sum / allData.length)
 }
 
 // MAIN FUNCT
 async function main() {
-    await loadCSV('tests.csv')
-    .then(results => pricesFromCSVArr(results))
-    .then(results => averagePrice(results))
-    .then(results => console.log(results))
-    .catch(err => console.error(err));
+    await loadCSV('tests5 copy.csv')
+        .then(results => pricesFromCSVArr(results))
+        .then(results => averagePrice(results))
+        .then(results => console.log(results))
+        .catch(err => console.error(err));
 };
 
 await main();
