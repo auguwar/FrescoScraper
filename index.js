@@ -7,11 +7,12 @@
 // Scraping related modules
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { log } from 'console';
 // Dotenv for environment variables
 import 'dotenv/config';
 // CSV and file system parser
 import { promises as fs } from 'fs';
-const horaminima = 1850 / 60;
+
 
 // loading csv file into an array of objects, each object containing model and url
 async function loadCSV(myFile) {
@@ -45,7 +46,6 @@ async function pricesFromCSVArr(arr) {
     }
     return newArr;
 }
-
 
 // function to get the average price of all models and return an array of objects with the model and average price
 function averagePrice(arr) {
@@ -106,13 +106,73 @@ function promediator(allData) {
     return (sum / allData.length)
 }
 
-// MAIN FUNCT
-async function main() {
-    await loadCSV('macbooks.csv')
-        .then(results => pricesFromCSVArr(results))
-        .then(results => averagePrice(results))
-        .then(results => console.log(results))
-        .catch(err => console.error(err));
+const config = {
+    url: 'http://localhost:8069',
+    db: 'testdb1',
+    username: 'guccibot@frescoservice.com',
+    password: 'garolfa',
 };
+
+async function login() {
+    const response = await axios.post(`${config.url}/web/session/authenticate`, {
+        jsonrpc: '2.0',
+        params: {
+            db: config.db,
+            login: config.username,
+            password: config.password,
+        },
+    }, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+    console.log(response.data);
+    return response.data.result;
+}
+
+async function getProducts(sessionId, context) {
+    const res = await axios.post(`${config.url}/web/dataset/call_kw/product.product/search_read`, {
+      jsonrpc: '2.0',
+      method: 'call',
+      params: {
+        model: 'product.product',
+        method: 'search_read',
+        args: [[]], // sin filtros, trae todos
+        kwargs: {
+          fields: ['id', 'name', 'list_price', 'qty_available'],
+          limit: 100, // podés sacar el limit o paginar
+        },
+        context,
+      },
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Openerp-Session-Id': sessionId,
+      },
+    });
+  
+    return res.data.result;
+  }
+
+
+// MAIN FUNCT
+// async function main() {
+//     await loadCSV('macbooks.csv')
+//         .then(results => pricesFromCSVArr(results))
+//         .then(results => averagePrice(results))
+//         .then(results => console.log(results))
+//         .catch(err => console.error(err));
+// };
+
+async function main() {
+    try {
+      const session = await login();
+      const productos = await getProducts(session.session_id, session.user_context);
+      console.log(`Se encontraron ${productos.length} productos`);
+      productos.forEach(p => {
+        console.log(`→ ${p.name} | Precio: ${p.list_price} | Stock: ${p.qty_available}`);
+      });
+    } catch (err) {
+      console.error('Error:', err.response?.data || err.message);
+    }
+  };
 
 await main();
