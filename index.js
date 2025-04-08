@@ -75,7 +75,7 @@ function averagePrice(arr) {
 // scraping data from HTTP
 async function getPrice(url) {
     try {
-        setTimeout(() => console.log('3 segs asi no se enoja everymac'), 3000);
+        // setTimeout(() => console.log('3 segs asi no se enoja everymac'), 3000);
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
         const result = $('table#specs37-title tbody tr td:last-child').text();
@@ -108,7 +108,7 @@ function promediator(allData) {
 
 // MAIN FUNCT
 async function main() {
-    await loadCSV('macbookairs.csv')
+    await loadCSV('macbooks.csv')
         .then(results => pricesFromCSVArr(results))
         .then(results => averagePrice(results))
         .then(results => console.log(results))
