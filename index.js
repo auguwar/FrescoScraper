@@ -7,11 +7,11 @@
 // Scraping related modules
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { log } from 'console';
 // Dotenv for environment variables
 import 'dotenv/config';
 // CSV and file system parser
 import { promises as fs } from 'fs';
+import xmlrpc from 'xmlrpc';
 
 
 // loading csv file into an array of objects, each object containing model and url
@@ -72,10 +72,16 @@ function averagePrice(arr) {
     return results.slice(1);
 }
 
+// Helper function to introduce a delay
+function delay(ms) {
+    console.log('Delaying request for ', ms, 'ms');
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // scraping data from HTTP
 async function getPrice(url) {
     try {
-        // setTimeout(() => console.log('3 segs asi no se enoja everymac'), 3000);
+        await delay(30000); // Delay to avoid being blocked by the server
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
         const result = $('table#specs37-title tbody tr td:last-child').text();
@@ -113,47 +119,47 @@ const config = {
     password: 'garolfa',
 };
 
-async function login() {
-    const response = await axios.post(`${config.url}/web/session/authenticate`, {
-        jsonrpc: '2.0',
-        params: {
-            db: config.db,
-            login: config.username,
-            password: config.password,
-        },
-    }, {
-        headers: { 'Content-Type': 'application/json' },
+// Cliente para autenticación
+const commonClient = xmlrpc.createClient({ url: `${config.url}/xmlrpc/2/common` });
+
+// Cliente para llamadas a objetos
+const objectClient = xmlrpc.createClient({ url: `${config.url}/xmlrpc/2/object` });
+
+// ODOO PRODUCT SEARCH
+function odooSearch(model) {
+    // Llamada a search_read
+    const args = [
+        config.db,
+        8,
+        config.password,
+        'product.template',
+        'search_read',
+        [[['default_code', '=', `MO${model}`]]],
+        { fields: ['id'], limit: 0 }
+    ];
+
+    objectClient.methodCall('execute_kw', args, (err, products) => {
+        if (err) {
+            return console.error('Error al buscar productos:', err);
+        }
+        // console.log(products[0].id);
+        return (products[0].id);
     });
-    console.log(response.data);
-    return response.data.result;
 }
 
-async function getProducts(sessionId, context) {
-    const res = await axios.post(`${config.url}/web/dataset/call_kw/product.product/search_read`, {
-      jsonrpc: '2.0',
-      method: 'call',
-      params: {
-        model: 'product.product',
-        method: 'search_read',
-        args: [[]], // sin filtros, trae todos
-        kwargs: {
-          fields: ['id', 'name', 'list_price', 'qty_available'],
-          limit: 100, // podés sacar el limit o paginar
-        },
-        context,
-      },
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Openerp-Session-Id': sessionId,
-      },
-    });
-  
-    return res.data.result;
-  }
-
-
 // MAIN FUNCT
+async function main() {
+    await loadCSV('macbooks.csv')
+        .then(results => pricesFromCSVArr(results))
+        .then(results => averagePrice(results))
+        // .then(results => results.forEach(element => {
+        //     odooSearch(element.model);
+        // }))
+        .then(results => console.log(results))
+        .catch(err => console.error(err));
+};
+
+// // MAIN FUNCT
 // async function main() {
 //     await loadCSV('macbooks.csv')
 //         .then(results => pricesFromCSVArr(results))
@@ -162,17 +168,73 @@ async function getProducts(sessionId, context) {
 //         .catch(err => console.error(err));
 // };
 
-async function main() {
-    try {
-      const session = await login();
-      const productos = await getProducts(session.session_id, session.user_context);
-      console.log(`Se encontraron ${productos.length} productos`);
-      productos.forEach(p => {
-        console.log(`→ ${p.name} | Precio: ${p.list_price} | Stock: ${p.qty_available}`);
-      });
-    } catch (err) {
-      console.error('Error:', err.response?.data || err.message);
-    }
-  };
+// async function main() {
+//     // 1. Autenticar y obtener uid
+//     commonClient.methodCall('authenticate', [config.db, config.username, config.password, {}], (err, uid) => {
+//         if (err) {
+//             return console.error('Error auth:', err);
+//         }
+//         console.log('UID obtenido:', uid);
+
+//         // 2. Ejecutar search_read en product.product
+//         const args = [
+//             config.db,
+//             8,
+//             config.password,
+//             'product.template',     // modelo
+//             'search_read',         // método
+//             [                      // args: sin filtros → todos los productos
+//                 [['default_code', '=', `MO${'A1466'}`]]
+//             ],
+//             {                      // kwargs: campos a devolver
+//                 fields: ['id', 'list_price', 'default_code'],
+//                 limit: 0             // 0 = sin límite (ojo con cantidad de datos)
+//             }
+//         ];
+
+
+//         objectClient.methodCall('execute_kw', args, (err2, products) => {
+//             if (err2) {
+//                 return console.error('Error al listar productos:', err2);
+//             }
+//             // 3. Mostramos como JSON
+//             console.log(JSON.stringify(products, null, 2));
+//         });
+//     });
+// };
+
+// async function main() {
+//     // 3. Autenticar y obtener uid
+//     commonClient.methodCall('authenticate', [config.db, config.username, config.password, {}], (err, uid) => {
+//         if (err) {
+//             return console.error('Error al autenticar:', err);
+//         }
+//         console.log('UID obtenido:', uid);
+
+//         // 4. ID de la plantilla y nuevo precio
+//         const templateId = 23;       // reemplazá con el ID real
+//         const nuevoPrecio = 99999;   // valor que quieras asignar
+
+//         // 5. Ejecutar write en product.template
+//         const args = [
+//             config.db,
+//             8,
+//             config.password,
+//             'product.template',    // modelo a actualizar
+//             'write',               // método
+//             [[templateId],      // lista de IDs a actualizar
+//             { list_price: nuevoPrecio } // campos a modificar
+//             ]
+//         ];
+
+//         objectClient.methodCall('execute_kw', args, (err2, result) => {
+//             if (err2) {
+//                 return console.error('Error al actualizar list_price:', err2);
+//             }
+//             console.log(`Resultado de la actualización:`, result);
+//             // result = true si se actualizó correctamente
+//         });
+//     });
+// }
 
 await main();
