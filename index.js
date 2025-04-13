@@ -56,6 +56,7 @@ function averagePrice(arr) {
         // console.log(orderedModels[i].model);
         if (isNaN(orderedModels[i].price)) {
             console.log('not a number encontrado en: ', orderedModels[i].model);
+            continue;
         } else if (orderedModels[i].model !== results[results.length - 1].model) {
             const firstIndex = orderedModels.findIndex((element) => element.model === orderedModels[i].model);
             // console.log('first index: ',firstIndex);
@@ -81,7 +82,7 @@ function delay(ms) {
 // scraping data from HTTP
 async function getPrice(url) {
     try {
-        await delay(30000); // Delay to avoid being blocked by the server
+        // await delay(30000); // Delay to avoid being blocked by the server
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
         const result = $('table#specs37-title tbody tr td:last-child').text();
@@ -138,13 +139,63 @@ function odooSearch(model) {
         { fields: ['id'], limit: 0 }
     ];
 
-    objectClient.methodCall('execute_kw', args, (err, products) => {
-        if (err) {
-            return console.error('Error al buscar productos:', err);
-        }
-        // console.log(products[0].id);
-        return (products[0].id);
+    return new Promise((resolve, reject) => {
+        objectClient.methodCall('execute_kw', args, (err, products) => {
+            if (err) {
+                console.error('Error al buscar productos:', err);
+                return reject(err);
+            }
+            if (products.length > 0) {
+                console.log('Producto encontrado: ', products[0].id);
+                resolve(products[0].id);
+            } else {
+                console.log('No se encontró el producto.');
+                resolve(null);
+            }
+        });
     });
+}
+
+// ODOO PRICE UPDATE
+function odooUpdatePrice(id, price) {
+    //  4. ID de la plantilla y nuevo precio
+    // const templateId = 23;       // reemplazá con el ID real
+    // const nuevoPrecio = 11111;   // valor que quieras asignar
+
+    // 5. Ejecutar write en product.template
+    const args = [
+        config.db,
+        8,
+        config.password,
+        'product.template',    // modelo a actualizar
+        'write',               // método
+        [[id],      // lista de IDs a actualizar
+        { list_price: price } // campos a modificar
+        ]
+    ];
+
+    objectClient.methodCall('execute_kw', args, (err2, result) => {
+        if (err2) {
+            return console.error('Error al actualizar list_price:', err2);
+        }
+        console.log(`Resultado de la actualización:`, result);
+        // result = true si se actualizó correctamente
+    });
+};
+
+// SEARCH N UPDATE
+async function searchAndUpdate(arr) {
+    console.log(arr);
+    console.log(typeof arr);
+    for (let i = 0; i < arr.length; i++) {
+        const model = arr[i].model;
+        console.log('Modelo: ', model);
+        const price = arr[i].avgPrice;
+        console.log('Precio: ', price);
+        const id = await odooSearch(model);
+        console.log('ID: ', id);
+        odooUpdatePrice(id, price);
+    }
 }
 
 // MAIN FUNCT
@@ -152,89 +203,8 @@ async function main() {
     await loadCSV('macbooks.csv')
         .then(results => pricesFromCSVArr(results))
         .then(results => averagePrice(results))
-        // .then(results => results.forEach(element => {
-        //     odooSearch(element.model);
-        // }))
-        .then(results => console.log(results))
+        .then(results => searchAndUpdate(results))
         .catch(err => console.error(err));
 };
-
-// // MAIN FUNCT
-// async function main() {
-//     await loadCSV('macbooks.csv')
-//         .then(results => pricesFromCSVArr(results))
-//         .then(results => averagePrice(results))
-//         .then(results => console.log(results))
-//         .catch(err => console.error(err));
-// };
-
-// async function main() {
-//     // 1. Autenticar y obtener uid
-//     commonClient.methodCall('authenticate', [config.db, config.username, config.password, {}], (err, uid) => {
-//         if (err) {
-//             return console.error('Error auth:', err);
-//         }
-//         console.log('UID obtenido:', uid);
-
-//         // 2. Ejecutar search_read en product.product
-//         const args = [
-//             config.db,
-//             8,
-//             config.password,
-//             'product.template',     // modelo
-//             'search_read',         // método
-//             [                      // args: sin filtros → todos los productos
-//                 [['default_code', '=', `MO${'A1466'}`]]
-//             ],
-//             {                      // kwargs: campos a devolver
-//                 fields: ['id', 'list_price', 'default_code'],
-//                 limit: 0             // 0 = sin límite (ojo con cantidad de datos)
-//             }
-//         ];
-
-
-//         objectClient.methodCall('execute_kw', args, (err2, products) => {
-//             if (err2) {
-//                 return console.error('Error al listar productos:', err2);
-//             }
-//             // 3. Mostramos como JSON
-//             console.log(JSON.stringify(products, null, 2));
-//         });
-//     });
-// };
-
-// async function main() {
-//     // 3. Autenticar y obtener uid
-//     commonClient.methodCall('authenticate', [config.db, config.username, config.password, {}], (err, uid) => {
-//         if (err) {
-//             return console.error('Error al autenticar:', err);
-//         }
-//         console.log('UID obtenido:', uid);
-
-//         // 4. ID de la plantilla y nuevo precio
-//         const templateId = 23;       // reemplazá con el ID real
-//         const nuevoPrecio = 99999;   // valor que quieras asignar
-
-//         // 5. Ejecutar write en product.template
-//         const args = [
-//             config.db,
-//             8,
-//             config.password,
-//             'product.template',    // modelo a actualizar
-//             'write',               // método
-//             [[templateId],      // lista de IDs a actualizar
-//             { list_price: nuevoPrecio } // campos a modificar
-//             ]
-//         ];
-
-//         objectClient.methodCall('execute_kw', args, (err2, result) => {
-//             if (err2) {
-//                 return console.error('Error al actualizar list_price:', err2);
-//             }
-//             console.log(`Resultado de la actualización:`, result);
-//             // result = true si se actualizó correctamente
-//         });
-//     });
-// }
 
 await main();
