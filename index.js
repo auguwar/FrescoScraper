@@ -19,10 +19,15 @@ async function loadCSV(myFile) {
     try {
         const data = await fs.readFile(myFile, 'ascii');
         const lines = data.split('\n');
-        const results = lines.map(line => {
-            const [model, url] = line.split(',');
-            return { model, url };
-        });
+        const results = lines
+            .map(line => {
+                const [model, url] = line.split(',');
+                if (!model || !url) {
+                    return null; // Skip malformed or empty lines
+                }
+                return { model: model.trim(), url: url.trim() };
+            })
+            .filter(item => item !== null); // Remove null entries
         return results;
     } catch (err) {
         throw err;
@@ -35,6 +40,7 @@ async function pricesFromCSVArr(arr) {
     for (let i = 0; i < arr.length; i++) {
         const price = await getPrice(arr[i].url);
         const split = priceSplitter(price);
+        console.log('split: ',split);
         const average = promediator(split);
         const model = arr[i].model;
         const data = {
@@ -82,7 +88,7 @@ function delay(ms) {
 // scraping data from HTTP
 async function getPrice(url) {
     try {
-        // await delay(30000); // Delay to avoid being blocked by the server
+        await delay(2000); // Delay to avoid being blocked by the server
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
         const result = $('table#specs37-title tbody tr td:last-child').text();
@@ -96,12 +102,15 @@ async function getPrice(url) {
 
 // returns an array of clean integers from the scraped data 
 function priceSplitter(scraped) {
-    const prices = scraped.replace(', ', '-').split('-');
+    const prices = scraped.replace(/ /g, '').replace(/,/g, '-').split('-');
     for (let i = 0; i < prices.length; i++) {
-        prices[i] = Number(prices[i].replace('US$', '').replace('*', '').replace('**', ''));
+        prices[i] = Number(prices[i].replace(/US\$|\*+/g, ''));
     }
-    console.log(prices);
-    return prices;
+    console.log('',prices);
+    prices.forEach(element => {
+        console.log(element)
+    });
+    return prices.filter(price => !isNaN(price));
 }
 
 // average of all items in array.
@@ -208,3 +217,54 @@ async function main() {
 };
 
 await main();
+
+
+// [
+//     { model: 'A1211', avgPrice: 75 },
+//     { model: 'A1212', avgPrice: 75 },
+//     { model: 'A1226', avgPrice: 125 },
+//     { model: 'A1229', avgPrice: 150 },
+//     { model: 'A1237', avgPrice: 37.5 },
+//     { model: 'A1260', avgPrice: 125 },
+//     { model: 'A1261', avgPrice: 175 },
+//     { model: 'A1278', avgPrice: 182.5 },
+//     { model: 'A1286', avgPrice: 251.13636363636363 },
+//     { model: 'A1297', avgPrice: 304.54545454545456 },
+//     { model: 'A1304', avgPrice: 75 },
+//     { model: 'A1369', avgPrice: 107.5 },
+//     { model: 'A1370', avgPrice: 75 },
+//     { model: 'A1398', avgPrice: 344.5238095238095 },
+//     { model: 'A1425', avgPrice: 200 },
+//     { model: 'A1465', avgPrice: 146.875 },
+//     { model: 'A1466', avgPrice: 204.54545454545453 },
+//     { model: 'A1502', avgPrice: 305.55555555555554 },
+//     { model: 'A1706', avgPrice: 445.8333333333333 },
+//     { model: 'A1707', avgPrice: 641.6666666666666 },
+//     { model: 'A1708', avgPrice: 375 },
+//     { model: 'A1932', avgPrice: 450 },
+//     { model: 'A1989', avgPrice: 600 },
+//     { model: 'A1990', avgPrice: 990 },
+//     { model: 'A2141', avgPrice: 1291.6666666666667 },
+//     { model: 'A2159', avgPrice: 550 },
+//     { model: 'A2179', avgPrice: 600 },
+//     { model: 'A2251', avgPrice: 787.5 },
+//     { model: 'A2289', avgPrice: 650 },
+//     { model: 'A2337', avgPrice: NaN },
+//     { model: 'A2338', avgPrice: 987.5 },
+//     { model: 'A2442', avgPrice: 1830 },
+//     { model: 'A2485', avgPrice: 2375 },
+//     { model: 'A2681', avgPrice: 825 },
+//     { model: 'A2779', avgPrice: 2475 },
+//     { model: 'A2780', avgPrice: 2883.3333333333335 },
+//     { model: 'A2918', avgPrice: 1699 },
+//     { model: 'A2941', avgPrice: 950 },
+//     { model: 'A2991', avgPrice: 3399 },
+//     { model: 'A2992', avgPrice: 2799 },
+//     { model: 'A3113', avgPrice: 975 },
+//     { model: 'A3114', avgPrice: 1225 },
+//     { model: 'A3185', avgPrice: 3449 },
+//     { model: 'A3186', avgPrice: 3749 },
+//     { model: 'A3240', avgPrice: 1149 },
+//     { model: 'A3401', avgPrice: 2199 },
+//     { model: 'A3403', avgPrice: 2699 }
+//   ]
