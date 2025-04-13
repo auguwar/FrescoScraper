@@ -125,10 +125,10 @@ function promediator(allData) {
 }
 
 const config = {
-    url: 'http://localhost:8069',
-    db: '16test',
-    username: 'guccibot@frescoservice.com',
-    password: 'garolfa',
+    url: 'http://localhost:8069', // URL de tu instancia de Odoo
+    db: 'INSERT DB NAME HERE',
+    username: 'INSERT USERNAME HERE',
+    password: 'INSERT PASSWORD OR APIKEY HERE',
 };
 
 // Cliente para autenticación
@@ -169,11 +169,6 @@ function odooSearch(model) {
 
 // ODOO PRICE UPDATE
 function odooUpdatePrice(id, price) {
-    //  4. ID de la plantilla y nuevo precio
-    // const templateId = 23;       // reemplazá con el ID real
-    // const nuevoPrecio = 11111;   // valor que quieras asignar
-
-    // 5. Ejecutar write en product.template
     const args = [
         config.db,
         8,
@@ -196,11 +191,6 @@ function odooUpdatePrice(id, price) {
 
 // ODOO PRICE UPDATE
 function odooUpdateCost(id, cost) {
-    //  4. ID de la plantilla y nuevo precio
-    // const templateId = 23;       // reemplazá con el ID real
-    // const nuevoPrecio = 11111;   // valor que quieras asignar
-
-    // 5. Ejecutar write en product.template
     const args = [
         config.db,
         8,
@@ -231,7 +221,7 @@ async function searchAndUpdate(arr) {
         console.log('Modelo: ', model);
         const price = arr[i].avgPrice;
         console.log('Precio: ', price);
-        var id;
+        let id;
         try {
             id = await odooSearch(model);
         } catch (error) {
